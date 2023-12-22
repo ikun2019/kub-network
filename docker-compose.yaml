@@ -1,0 +1,34 @@
+version: '3'
+services:
+  auth:
+    platform: linux/amd64
+    build:
+      context: ./auth-api
+      dockerfile: Dockerfile
+    volumes:
+      - ./auth-api:/workspace
+  users:
+    platform: linux/amd64
+    build:
+      context: ./users-api
+      dockerfile: Dockerfile
+    volumes:
+      - ./users-api:/workspace
+    environment:
+      # - AUTH_ADDRESS=auth
+      - AUTH_SERVICE_SERVICE_HOST=auth
+    ports:
+      - 8080:8080
+  tasks:
+    platform: linux/amd64
+    build:
+      context: ./tasks-api
+      dockerfile: Dockerfile
+    volumes:
+      - ./tasks-api:/workspace
+    environment:
+      - AUTH_ADDRESS=auth
+    ports:
+      - 8000:8000
+    depends_on:
+      - auth

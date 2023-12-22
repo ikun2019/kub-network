@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+
+# deploymentの名前を設定
+metadata:
+  name: users-deployment
+
+# clusterの設定
+spec:
+  # clusterが制御するpodを設定
+  selector:
+    matchLabels: # ラベルでグループ化している
+      app: users # 複数指定することもできる
+  # podの設定
+  template:
+    metadata:
+      labels: # podにラベルを設定している
+        app: users
+    # worker nodeの設定(podに入れるdocker imageを指定している)
+    spec:
+      containers:
+        - name: users
+          image: miyatto/users-api:latest
+          # env:
+          #   - name: AUTH_ADDRESS
+          #     value: localhost
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+
+# serviceの名前を指定
+metadata:
+  name: users-service
+spec:
+  selector:
+    app: users # どのラベルが付いたpodのserviceなのかを指定している
+  type: LoadBalancer
+  # typeをCluseteIPにするとクラスター内部だけの通信になる。
+  # typeをLoadBalancerにすると外部と通信できる。
+  ports:
+    - protocol: TCP
+      port: 8080 # 公開するポート番号
+      targetPort: 8080 # listenしているポート番号
